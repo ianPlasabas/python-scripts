@@ -1,11 +1,16 @@
 import boto3,yaml,string,random,os
 
 def create_bucket(bucket_name, iam_profile):
+
+    #Connect to S3 Service
     session = boto3.Session(profile_name=iam_profile)
     client  = session.client('s3')
+
+    #Random suffix alphanumeric to add at the end of S3 bucket name
     length_of_suffix = 16
     random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=length_of_suffix))
 
+    #Create bucket
     client.create_bucket(
         Bucket = f"{bucket_name}-{random_suffix}"
     )
