@@ -1,30 +1,33 @@
-import boto3,botocore,json,string,random,pprint
+import boto3,yaml,string,random,os
 
-session = boto3.Session(profile_name='plasabas-general-admin')
-client  = session.client('s3')
-list_of_buckets = client.list_buckets()["Buckets"]
+def create_bucket(bucket_name, iam_profile):
+    session = boto3.Session(profile_name=iam_profile)
+    client  = session.client('s3')
+    length_of_suffix = 16
+    random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=length_of_suffix))
 
-def main():
-    list_of_empty_buckets = []
+    client.create_bucket(
+        Bucket = f"{bucket_name}-{random_suffix}"
+    )
 
-    print(f"{'='*100}\nList of Empty buckets bucket\n{'='*100}")
-    for bucket in list_of_buckets:
-        check_if_empty = client.list_objects_v2(Bucket=bucket["Name"])
-        if check_if_empty["KeyCount"] == 0:
-            list_of_empty_buckets.append(bucket["Name"])
-            print(f"{bucket["Name"]}")
-    print(f"{'='*100}\nEnd of the list\n{'='*100}")
-
-    return list_of_empty_buckets
-
-def delete_empty_buckets(list_of_empty_buckets):
-
-    print(f"{'='*100}\nDeleting Empty Buckets\n{'='*100}")
-    for bucket in list_of_empty_buckets:
-        print(f"Deleting: {bucket}")
-        client.delete_bucket(Bucket=bucket)
-
+    return print("Success!")
 
 if __name__ == "__main__":
-    list_of_empty_buckets = main()
-    delete_empty_buckets(list_of_empty_buckets)
+    
+    print(f"{'='*75}\nS3 Bucket Provisioning Script\n\nInstruction:\nPlease provide the file name under the same directory\n{'='*75}")
+
+    while True:
+        file_name=input("\nFile name: ")
+        file_path=os.path.join(os.getcwd(),file_name)
+
+        if os.path.exists(file_path):
+            print(f"File '{file_name}' found. Proceeding with the script.\n")
+
+            with open(file_path,"r") as f:
+                file_content = yaml.safe_load(f)
+                for item in file_content["buckets"]:
+                    print(f'-->Creating {item["name"]} bucket')
+                    create_bucket(item["name"],item["profile"])
+            break
+        else:
+            print(f"Error: The file '{file_name}' does not exist in the current directory.")
