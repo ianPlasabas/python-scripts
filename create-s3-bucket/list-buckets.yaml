@@ -1,0 +1,7 @@
+buckets:
+  - name: s3-bucket-project-01
+    region: us-east-1
+    profile: plasabas-general-admin
+  - name: s3-bucket-project-02
+    region: us-east-1
+    profile: plasabas-general-admin
